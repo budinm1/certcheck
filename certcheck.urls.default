@@ -1,0 +1,14 @@
+# Copyright (C) Michal Budínský <michal@budinsky.net>
+# GIT: https://github.com/budinm1/certcheck
+# Licence: WTFPL, grab your copy here: http://www.wtfpl.net/
+
+# this file is used only if no --urls_file od URL is specified
+
+# use one url per line
+# example.com OR www.example.com OR example.com:8080
+
+# rename this file to certcheck.url and change it to your needs
+
+python.org
+verisign.com
+google.com:443
