@@ -19,7 +19,7 @@ optional arguments:
 -e, --errors_only     do not report OK hosts
 -d DAYS_TO_EXPIRE, --days_to_expire DAYS_TO_EXPIRE
                       specify days to certificate expire, default 10
--j, --json            print report in json, not affected by -e and -v
+-j, --json            print output in json, -j is not affected by -e and -v
 -n, --no_color        do not use colors in output
 -t TIMEOUT, --timeout TIMEOUT
                       specify request timeout in seconds, default 3.0
