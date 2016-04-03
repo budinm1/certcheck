@@ -196,7 +196,8 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
 
     except ssl.SSLError:
         errorsShort.append(['SSL_ERROR', red])
-        errorsLong.append('General SSL error')
+        errorsLong.append('General SSL error. \
+OpenSSL is needed for this software to work.')
         report(url, port, errorsShort, errorsLong, indent)
 
     except ssl.CertificateError:
@@ -219,7 +220,8 @@ parser.add_argument('-e', '--errors_only', default=False, action='store_true',
 parser.add_argument('-d', '--days_to_expire', default=10, type=int,
                     help='specify days to certificate expire, default 10')
 parser.add_argument('-j', '--json', default=False, action='store_true',
-                    help='print report in json, not affected by -e and -v ')
+                    help='print output in json, \
+-j is  not affected by -e and -v ')
 parser.add_argument('-n', '--no_color', default=False, action='store_true',
                     help='do not use colors in output')
 parser.add_argument('-t', '--timeout', default=3, type=int,
