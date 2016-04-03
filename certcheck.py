@@ -210,7 +210,8 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
         report(url, port, errorsShort, errorsLong, indent)
 
 parser = argparse.ArgumentParser(
-    description='Check websites for valid SSL certificates.')
+    description='''Check websites for valid SSL certificates.
+Also checks all alt names in checked certificates.''')
 parser.add_argument('-a', '--no_alt_names', default=False, action='store_true',
                     help='do not deep check alt names in certificates')
 parser.add_argument('-e', '--errors_only', default=False, action='store_true',
