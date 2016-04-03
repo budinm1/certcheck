@@ -1,11 +1,9 @@
 # CertCheck
-Check websites for valid SSL certificates.
+Check websites for valid SSL certificates. Also checks all alt names in checked certificates.
 
 # Usage
 certcheck.py [-h] [-a] [-e] [-d DAYS_TO_EXPIRE] [-j] [-n] [-t TIMEOUT]
 [-u URL_FILE] [-v] [--version] [URL [URL ...]]
-
-Check websites for valid SSL certificates. Also checks all alt names in checked certificates.
 
 positional arguments:
 URL                   list of URLs
