@@ -9,6 +9,6 @@
 
 # rename this file to certcheck.url and change it to your needs
 
-python.org
+docs.python.org
 verisign.com
 google.com:443
