@@ -2,6 +2,7 @@
 Check websites for valid SSL certificates. Also checks all alt names in checked certificates.
 
 # Usage
+```shell
 certcheck.py [-h] [-a] [-e] [-d DAYS_TO_EXPIRE] [-j] [-n] [-t TIMEOUT]
 [-u URL_FILE] [-v] [--version] [URL [URL ...]]
 
@@ -22,6 +23,7 @@ optional arguments:
                       specify file with URLs, only if no URL is specified
 -v, --verbose         give also descriptive errors
 --version             show version
+```
 
 # What errors are raised
 NOT_BEFORE            certificate issued in the future
