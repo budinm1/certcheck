@@ -1,6 +1,10 @@
 # CertCheck
 Check websites for valid SSL certificates. Also checks all alt names in checked certificates.
 
+## Requirements
+- Python 3.4 or later
+- OpenSSL 1.0.1 or later
+
 ## Usage
 ```shell
 certcheck.py [-h] [-a] [-e] [-d DAYS_TO_EXPIRE] [-j] [-n] [-t TIMEOUT]
