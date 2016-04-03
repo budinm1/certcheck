@@ -55,4 +55,5 @@ connection time out
 
 ### Licence
 WTFPL, grab your copy here: http://www.wtfpl.net/
+
 Copyright (C) Michal Budínský <michal@budinsky.net>
