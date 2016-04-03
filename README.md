@@ -25,7 +25,8 @@ optional arguments:
 --version             show version
 ```
 
-## What errors are raised
+## Raised errors
+
 ### NOT_BEFORE
 certificate issued in the future
 
