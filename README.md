@@ -1,7 +1,7 @@
 # CertCheck
 Check websites for valid SSL certificates. Also checks all alt names in checked certificates.
 
-# Usage
+## Usage
 ```shell
 certcheck.py [-h] [-a] [-e] [-d DAYS_TO_EXPIRE] [-j] [-n] [-t TIMEOUT]
 [-u URL_FILE] [-v] [--version] [URL [URL ...]]
@@ -25,15 +25,34 @@ optional arguments:
 --version             show version
 ```
 
-# What errors are raised
-NOT_BEFORE            certificate issued in the future
-EXPIRED               certificate expired
-SOON_EXPIRED          certificate will expire in -d days, default in 10 days
-SERIAL_ERROR          certificate serial number on alt name is not the same as
-                      in main certificate
-NOT_FOUND             hostname not found
-CONNECTION_REFUSED    connection to hostname refusee
-SSL_ERROR             SSL error, certificate is not issued for this host,
-                      usualy
-CERTIFICATE_ERROR     certificate is probably not issued for this host
-TIMEOUT               connection time out
+## What errors are raised
+### NOT_BEFORE
+certificate issued in the future
+
+### EXPIRED
+certificate expired
+
+### SOON_EXPIRED
+certificate will expire in -d days, default in 10 days
+
+### SERIAL_ERROR
+certificate serial number on alt name is not the same as in main certificate
+
+### NOT_FOUND
+hostname not found
+
+### CONNECTION_REFUSED
+connection to hostname refusee
+
+### SSL_ERROR
+SSL error, certificate is not issued for this host, usualy
+
+### CERTIFICATE_ERROR
+certificate is probably not issued for this host
+
+### TIMEOUT
+connection time out
+
+### Licence
+WTFPL, grab your copy here: http://www.wtfpl.net/
+Copyright (C) Michal Budínský <michal@budinsky.net>
