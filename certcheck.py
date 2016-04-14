@@ -10,6 +10,7 @@ import ssl
 import socket
 import argparse
 import json
+import errno
 from platform import system
 from datetime import datetime, timezone
 
@@ -52,9 +53,13 @@ def getUrls(rawURLs, url_file):
                         continue
                     else:
                         urls.append(getUrlPort(line))
-        except FileNotFoundError:
-            badExit('''FileNotFoundError: No URL argument specified
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                badExit('''FileNotFoundError: No URL argument specified
 and provided url_file ('{}') not found.'''.format(url_file))
+            else:
+                raise
+
         except ValueError:
             badExit('''ValueError: Check your port numbers
 in url_file ('{}').'''.format(url_file))
@@ -135,8 +140,8 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
     upSerial: serial number if main certificate
     '''
 
-    errorsShort = []
-    errorsLong = []
+    errors_short = []
+    errors_long = []
 
     try:
         conn = context.wrap_socket(socket.socket(socket.AF_INET),
@@ -145,70 +150,73 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
         cert = conn.getpeercert()
         conn.close()
 
-        notAfter = datetime.fromtimestamp(
+        not_after = datetime.fromtimestamp(
             ssl.cert_time_to_seconds(cert['notAfter']),
             timezone.utc)
-        notBefore = datetime.fromtimestamp(
+        not_before = datetime.fromtimestamp(
             ssl.cert_time_to_seconds(cert['notBefore']),
             timezone.utc)
-        serialNumber = cert['serialNumber']
+        serial_number = cert['serialNumber']
 
-        if NOW.timestamp() - notBefore.timestamp() < 0:
-            errorsShort.append(['NOT_BEFORE', red])
-            errorsLong.append('Not before: {}'.format(notBefore))
+        if NOW.timestamp() - not_before.timestamp() < 0:
+            errors_short.append(['NOT_BEFORE', red])
+            errors_long.append('Not before: {}'.format(not_before))
 
-        if notAfter.timestamp() - NOW.timestamp() < 0:
-            errorsShort.append(['EXPIRED', red])
-            errorsLong.append('Not after: {}'.format(notAfter))
+        if not_after.timestamp() - NOW.timestamp() < 0:
+            errors_short.append(['EXPIRED', red])
+            errors_long.append('Not after: {}'.format(not_after))
 
-        if (notAfter - NOW).days < args.days_to_expire:
-            errorsShort.append(['SOON_EXPIRED', yellow])
-            errorsLong.append('Certificate will expire in {} days.'.format(
-                (notAfter - NOW).days))
+        if (not_after - NOW).days < args.days_to_expire:
+            errors_short.append(['SOON_EXPIRED', yellow])
+            errors_long.append('Certificate will expire in {} days.'.format(
+                (not_after - NOW).days))
 
         if args.no_alt_names:
-            report(url, port, errorsShort, errorsLong, indent, cert)
+            report(url, port, errors_short, errors_long, indent, cert)
         elif goDeep:
-            report(url, port, errorsShort, errorsLong, indent, cert)
+            report(url, port, errors_short, errors_long, indent, cert)
             subjectNames = [host.replace('*.', '') for
                             dns, host in cert['subjectAltName'] if host != url]
 
             mainUrl = url
             for url in subjectNames:
-                checkCert(context, url, 443, False, 2, serialNumber, mainUrl)
+                checkCert(context, url, 443, False, 2, serial_number, mainUrl)
         else:
-            if serialNumber != upSerial:
-                errorsShort.append(['SERIAL_ERROR', yellow])
-                errorsLong.append(
+            if serial_number != upSerial:
+                errors_short.append(['SERIAL_ERROR', yellow])
+                errors_long.append(
                     'Certificate serial numbers of {} and {} do not match.\
                     '.format(mainUrl, url))
-            report(url, port, errorsShort, errorsLong, indent, cert)
+            report(url, port, errors_short, errors_long, indent, cert)
 
     except socket.gaierror:
-        errorsShort.append(['NOT_FOUND', yellow])
-        errorsLong.append('Host {} not found.'.format(url))
-        report(url, port, errorsShort, errorsLong, indent)
+        errors_short.append(['NOT_FOUND', yellow])
+        errors_long.append('Host {} not found.'.format(url))
+        report(url, port, errors_short, errors_long, indent)
 
-    except ConnectionRefusedError:
-        errorsShort.append(['CONNECTION_REFUSED', red])
-        errorsLong.append('Connection on port {} refused.'.format(port))
-        report(url, port, errorsShort, errorsLong, indent)
+    except OSError as e:
+        if e.errno == errno.ECONNREFUSED:
+            errors_short.append(['CONNECTION_REFUSED', red])
+            errors_long.append('Connection on port {} refused.'.format(port))
+            report(url, port, errors_short, errors_long, indent)
+        else:
+            raise
 
     except ssl.SSLError:
-        errorsShort.append(['SSL_ERROR', red])
-        errorsLong.append('General SSL error. \
+        errors_short.append(['SSL_ERROR', red])
+        errors_long.append('General SSL error. \
 OpenSSL is needed for this software to work.')
-        report(url, port, errorsShort, errorsLong, indent)
+        report(url, port, errors_short, errors_long, indent)
 
     except ssl.CertificateError:
-        errorsShort.append(['CERTIFICATE_ERROR', red])
-        errorsLong.append('Certificate is probably not issued for this host')
-        report(url, port, errorsShort, errorsLong, indent)
+        errors_short.append(['CERTIFICATE_ERROR', red])
+        errors_long.append('Certificate is probably not issued for this host')
+        report(url, port, errors_short, errors_long, indent)
 
     except socket.timeout:
-        errorsShort.append(['TIMEOUT', red])
-        errorsLong.append('Connection timed out.')
-        report(url, port, errorsShort, errorsLong, indent)
+        errors_short.append(['TIMEOUT', red])
+        errors_long.append('Connection timed out.')
+        report(url, port, errors_short, errors_long, indent)
 
 parser = argparse.ArgumentParser(
     description='''Check websites for valid SSL certificates.
