@@ -225,8 +225,8 @@ parser.add_argument('-a', '--no_alt_names', default=False, action='store_true',
                     help='do not deep check alt names in certificates')
 parser.add_argument('-e', '--errors_only', default=False, action='store_true',
                     help='do not report OK hosts')
-parser.add_argument('-d', '--days_to_expire', default=10, type=int,
-                    help='specify days to certificate expire, default 10')
+parser.add_argument('-d', '--days_to_expire', default=21, type=int,
+                    help='specify days to certificate expire, default 21')
 parser.add_argument('-j', '--json', default=False, action='store_true',
                     help='print output in json, \
 -j is  not affected by -e and -v ')
