@@ -6,13 +6,16 @@
 
 '''Check websites for valid SSL certificates.'''
 
-import ssl
 import socket
 import argparse
 import json
 import errno
 from platform import system
 from datetime import datetime, timezone
+try:
+    import ssl
+except ImportError:
+    badExit('Failed to import Python SSL library.')
 
 VERSION = '1.0_rc1'
 CONFIG_FILE = 'certcheck.urls'
@@ -26,6 +29,8 @@ noColor = '\033[0m'
 
 
 def badExit(txt):
+    '''In the case of nonstandard ending of program prints message
+    and exit with status 1'''
     print(txt)
     exit(1)
 
@@ -69,7 +74,7 @@ in url_file ('{}').'''.format(url_file))
                 urls.append(getUrlPort(url))
             except ValueError:
                 badExit('ValueError: Check your port numbers ')
-    return(urls)
+    return urls
 
 
 def report(url, port, errorsShort, errorsLong, indent=0, cert=None):
@@ -130,7 +135,7 @@ def report(url, port, errorsShort, errorsLong, indent=0, cert=None):
             ))
 
 
-def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
+def checkCert(SSLContext, url, port=443, goDeep=True, indent=0, upSerial='',
               mainUrl=''):
     '''Main part of CerCheck program.
     url, port of probed host
@@ -144,8 +149,8 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
     errors_long = []
 
     try:
-        conn = context.wrap_socket(socket.socket(socket.AF_INET),
-                                   server_hostname=url)
+        conn = SSLContext.wrap_socket(socket.socket(socket.AF_INET),
+                                      server_hostname=url)
         conn.connect((url, port))
         cert = conn.getpeercert()
         conn.close()
@@ -167,7 +172,9 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
             errors_long.append('Not after: {}'.format(not_after))
 
         if (not_after - NOW).days < args.days_to_expire:
-            errors_short.append(['SOON_EXPIRED', yellow])
+            errors_short.append(['EXPIRE_IN_{}_DAY{}'.format(
+                (not_after - NOW).days, '' if (not_after - NOW) == 1 else 'S'),
+                                 yellow])
             errors_long.append('Certificate will expire in {} days.'.format(
                 (not_after - NOW).days))
 
@@ -175,12 +182,14 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
             report(url, port, errors_short, errors_long, indent, cert)
         elif goDeep:
             report(url, port, errors_short, errors_long, indent, cert)
-            subjectNames = [host.replace('*.', '') for
-                            dns, host in cert['subjectAltName'] if host != url]
+            subject_names = [host.replace('*.', '') for
+                             dns, host in cert[
+                                 'subjectAltName'] if host != url]
 
             mainUrl = url
-            for url in subjectNames:
-                checkCert(context, url, 443, False, 2, serial_number, mainUrl)
+            for url in subject_names:
+                checkCert(SSLContext, url, 443, False, 2, serial_number,
+                          mainUrl)
         else:
             if serial_number != upSerial:
                 errors_short.append(['SERIAL_ERROR', yellow])
@@ -188,19 +197,6 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
                     'Certificate serial numbers of {} and {} do not match.\
                     '.format(mainUrl, url))
             report(url, port, errors_short, errors_long, indent, cert)
-
-    except socket.gaierror:
-        errors_short.append(['NOT_FOUND', yellow])
-        errors_long.append('Host {} not found.'.format(url))
-        report(url, port, errors_short, errors_long, indent)
-
-    except OSError as e:
-        if e.errno == errno.ECONNREFUSED:
-            errors_short.append(['CONNECTION_REFUSED', red])
-            errors_long.append('Connection on port {} refused.'.format(port))
-            report(url, port, errors_short, errors_long, indent)
-        else:
-            raise
 
     except ssl.SSLError:
         errors_short.append(['SSL_ERROR', red])
@@ -217,6 +213,19 @@ OpenSSL is needed for this software to work.')
         errors_short.append(['TIMEOUT', red])
         errors_long.append('Connection timed out.')
         report(url, port, errors_short, errors_long, indent)
+
+    except socket.gaierror:
+        errors_short.append(['NOT_FOUND', yellow])
+        errors_long.append('Host {} not found.'.format(url))
+        report(url, port, errors_short, errors_long, indent)
+
+    except OSError as e:
+        if e.errno == errno.ECONNREFUSED:
+            errors_short.append(['CONNECTION_REFUSED', red])
+            errors_long.append('Connection on port {} refused.'.format(port))
+            report(url, port, errors_short, errors_long, indent)
+        else:
+            raise
 
 parser = argparse.ArgumentParser(
     description='''Check websites for valid SSL certificates.
@@ -254,10 +263,10 @@ if args.no_color or system() != 'Linux':
     yellow = ''
     noColor = ''
 
-urls = getUrls(args.URL, args.url_file)
+hostUrls = getUrls(args.URL, args.url_file)
 
 socket.setdefaulttimeout(args.timeout)
-context = ssl.create_default_context()
+hostSSLContext = ssl.create_default_context()
 
-for url, port in urls:
-    checkCert(context, url, port)
+for hostUrl, hostPort in hostUrls:
+    checkCert(hostSSLContext, hostUrl, hostPort)
