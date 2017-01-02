@@ -202,30 +202,41 @@ def checkCert(SSLContext, url, port=443, goDeep=True, indent=0, upSerial='',
         errors_short.append(['SSL_ERROR', red])
         errors_long.append('General SSL error. \
 OpenSSL is needed for this software to work.')
-        report(url, port, errors_short, errors_long, indent)
 
     except ssl.CertificateError:
         errors_short.append(['CERTIFICATE_ERROR', red])
         errors_long.append('Certificate is probably not issued for this host')
-        report(url, port, errors_short, errors_long, indent)
 
     except socket.timeout:
         errors_short.append(['TIMEOUT', red])
         errors_long.append('Connection timed out.')
-        report(url, port, errors_short, errors_long, indent)
 
     except socket.gaierror:
         errors_short.append(['NOT_FOUND', yellow])
         errors_long.append('Host {} not found.'.format(url))
-        report(url, port, errors_short, errors_long, indent)
+
+    except ConnectionResetError:
+        errors_short.append(['CONNECTION_RESET_ERROR', red])
+        errors_long.append('Connection reset by peer {}'.format(url))
 
     except OSError as e:
         if e.errno == errno.ECONNREFUSED:
             errors_short.append(['CONNECTION_REFUSED', red])
             errors_long.append('Connection on port {} refused.'.format(port))
-            report(url, port, errors_short, errors_long, indent)
+
+        if e.errno == 113:
+            errors_short.append(['NO_ROUTE_TO_HOST', red])
+            errors_long.append('No Route to host.')
+
         else:
+            errors_short.append(['UNEXPECTED_ERROR', red])
+            errors_long.append('Unexpected error. Contact author with ERROR \
+NUMBER: {}'.format(e.errno))
+            print('Unexpected error. Contact author with ERROR NUMBER:',
+                  e.errno)
             raise
+    finally:
+        report(url, port, errors_short, errors_long, indent)
 
 parser = argparse.ArgumentParser(
     description='''Check websites for valid SSL certificates.
