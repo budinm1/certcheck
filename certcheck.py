@@ -4,7 +4,7 @@
 # GIT: https://github.com/budinm1/certcheck
 # Licence: WTFPL, grab your copy here: http://www.wtfpl.net/
 
-'''Check websites for valid SSL certificates.'''
+"""Check websites for valid SSL certificates."""
 
 import ssl
 import socket
@@ -14,7 +14,7 @@ import errno
 from platform import system
 from datetime import datetime, timezone
 
-VERSION = '1.0_rc1'
+VERSION = '1.0_rc2'
 CONFIG_FILE = 'certcheck.urls'
 NOW = datetime.now(timezone.utc)
 
@@ -31,18 +31,18 @@ def badExit(txt):
 
 
 def getUrlPort(rawURL):
-    '''take URL in like 'exaple.com' or 'example.org:8080'
+    """take URL in like 'exaple.com' or 'example.org:8080'
     and return it like list ['exaple.com', 443] or
-    ['example.org', 8080]'''
+    ['example.org', 8080]"""
 
     if ':' in rawURL:
-        return(rawURL.split(':')[0], int(rawURL.split(':')[1].strip()))
+        return rawURL.split(':')[0], int(rawURL.split(':')[1].strip())
     else:
-        return(rawURL.strip(), 443)
+        return rawURL.strip(), 443
 
 
 def getUrls(rawURLs, url_file):
-    '''If no URLs definet parse them from file.'''
+    """If no URLs definet parse them from file."""
 
     urls = []
     if not rawURLs:
@@ -137,7 +137,7 @@ def checkCert(context, url, port=443, goDeep=True, indent=0, upSerial='',
     goDeep: used only on main host, will check, certificate consistency on all
     certificate DNS records
     indent: indentation of report acordingly to goDeep
-    upSerial: serial number if main certificate
+    upSerial: serial number of main certificate
     '''
 
     errors_short = []
