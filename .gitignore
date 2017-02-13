@@ -7,3 +7,4 @@ yupa@beranek:~/git/online$ cat .gitignore
 
 # Ignore custom url file
 certcheck.urls
+__pycache__*
