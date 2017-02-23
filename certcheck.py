@@ -235,8 +235,6 @@ NUMBER: {}'.format(e.errno))
             print('Unexpected error. Contact author with ERROR NUMBER:',
                   e.errno)
             raise
-    finally:
-        report(url, port, errors_short, errors_long, indent)
 
 parser = argparse.ArgumentParser(
     description='''Check websites for valid SSL certificates.
